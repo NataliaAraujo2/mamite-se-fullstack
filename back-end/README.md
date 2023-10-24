@@ -1,3 +1,3 @@
-npm i cors dotenv express express-validator 
-npm i --save-dev nodemon
-npm i multer
+npm i cors dotenv express express-validator <br>
+npm i --save-dev nodemon <br>
+npm i multer <br>
