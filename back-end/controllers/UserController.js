@@ -15,7 +15,7 @@ const generateToken = (id) => {
 
 // Register user and sign in
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, permissionType } = req.body;
 
   //check if user exists
   const user = await User.findOne({ email });
@@ -25,7 +25,11 @@ const register = async (req, res) => {
     return;
   }
   //Determines the initial value of permissionType
-  const permissionType = "customer";
+
+  if (permissionType === "") {
+    permissionType = "customer";
+  }
+
   //creates the array of permission types
   const permissionTypeArray = [];
   permissionTypeArray.push(permissionType);
@@ -135,10 +139,55 @@ const getUserById = async (req, res) => {
   }
 };
 
+//update user by id
+const updateUserById = async (req, res) => {
+  //Checks the user's permission type
+  const reqUser = req.user;
+  const userAdmin = await User.findById(
+    new mongoose.Types.ObjectId(reqUser._id)
+  ).select("-password");
+  const userAdminPermission = userAdmin.permissionType.includes("admin");
+
+  if (userAdminPermission === true) {
+    //Get user by id
+    const { id } = req.params;
+    const { permissionType } = req.body;
+
+    try {
+      const user = await User.findById(new mongoose.Types.ObjectId(id)).select(
+        "-password"
+      );
+      // Change user permission
+      if (user) {
+        const verifyUserPermission =
+          user.permissionType.includes(permissionType);
+        if (verifyUserPermission === true) {
+          res.status(422).json({ errors: ["Permissão já concedida!"] });
+          return;
+        } else {
+          user.permissionType.push(permissionType);
+        }
+      } else {
+        res.status(404).json({ errors: ["Usuário não encontrado."] });
+        return;
+      }
+
+      await user.save();
+
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(404).json({ errors: ["Id não encontrado."] });
+    }
+  } else {
+    res.status(401).json({ errors: ["Acesso Negado."] });
+  }
+};
+
 module.exports = {
   register,
   login,
   getCurrentUser,
   updateCurrentUser,
   getUserById,
+  updateUserById,
 };
