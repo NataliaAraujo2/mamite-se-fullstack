@@ -2,6 +2,11 @@ const { body } = require("express-validator");
 
 const userCreateValidation = () => {
   return [
+    body("name")
+      .isString()
+      .withMessage("O campo nome é obrigatório.")
+      .isLength({ min: 3 })
+      .withMessage("O nome precisa ter pelo menos 3 caracteres"),
     body("email")
       .isString()
       .withMessage("O email é obrigatório.")
@@ -21,10 +26,7 @@ const userCreateValidation = () => {
         }
         return true;
       }),
-    body("permissionType")
-      .isString()
-      .notEmpty()
-      .withMessage("O tipo de autorização é obrigatória. Default: customer"),
+    body("permissionType").isString(),
   ];
 };
 
@@ -39,9 +41,29 @@ const loginValidation = () => {
   ];
 };
 
-
+const userUpdateValidation = () => {
+  return [
+    body("name")
+      .optional()
+      .isLength({ min: 3 })
+      .withMessage("O nome precisa ter pelo menos 3 caracteres"),
+    body("permissionType")
+      .custom((value) => {
+        if (value != "admin" || "staff") {
+          throw new Error("Permissão inválida!");
+        }
+        return true;
+      })
+      .optional(),
+    body("password")
+      .optional()
+      .isLength({ min: 5 })
+      .withMessage("A senha precisa ter no mínimo 5 caracteres"),
+  ];
+};
 
 module.exports = {
   userCreateValidation,
   loginValidation,
+  userUpdateValidation,
 };
