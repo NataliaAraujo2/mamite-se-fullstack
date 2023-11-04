@@ -47,14 +47,6 @@ const userUpdateValidation = () => {
       .optional()
       .isLength({ min: 3 })
       .withMessage("O nome precisa ter pelo menos 3 caracteres"),
-    body("permissionType")
-      .custom((value) => {
-        if (value != "admin" || "staff") {
-          throw new Error("Permissão inválida!");
-        }
-        return true;
-      })
-      .optional(),
     body("password")
       .optional()
       .isLength({ min: 5 })

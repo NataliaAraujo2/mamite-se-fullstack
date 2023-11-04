@@ -15,7 +15,7 @@ const generateToken = (id) => {
 
 // Register user and sign in
 const register = async (req, res) => {
-  const { name, email, password, permissionType } = req.body;
+  const { name, email, password } = req.body;
 
   //check if user exists
   const user = await User.findOne({ email });
@@ -25,7 +25,7 @@ const register = async (req, res) => {
     return;
   }
   //Determines the initial value of permissionType
-
+  let permissionType = "";
   if (permissionType === "") {
     permissionType = "customer";
   }
@@ -164,9 +164,11 @@ const updateUserById = async (req, res) => {
         if (verifyUserPermission === true) {
           res.status(422).json({ errors: ["Permissão já concedida!"] });
           return;
-        } else {
-          user.permissionType.push(permissionType);
+        } else if (permissionType !== "admin" && permissionType !== "staff") {
+          res.status(422).json({ errors: ["Permissão inválida!"] });
+          return;
         }
+        user.permissionType.push(permissionType);
       } else {
         res.status(404).json({ errors: ["Usuário não encontrado."] });
         return;
