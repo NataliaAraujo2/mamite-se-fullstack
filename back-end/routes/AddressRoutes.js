@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 //Controller
-const { insertBillingAddress, insertDeliveryAddress, deleteBillingAddress, deleteDeliveryAddress } = require("../controllers/AddressControler");
+const { insertBillingAddress, insertDeliveryAddress, deleteBillingAddress, deleteDeliveryAddress } = require("../controllers/AddressController");
 
 //Middlewares
 const {

@@ -24,13 +24,11 @@ const register = async (req, res) => {
     res.status(422).json({ errors: ["Por favor, utilize outro email"] });
     return;
   }
-  //Determines the initial value of permissionType
-  let permissionType = "";
-  if (permissionType === "") {
-    permissionType = "customer";
-  }
 
+  
+ 
   //creates the array of permission types
+  let permissionType = "customer"
   const permissionTypeArray = [];
   permissionTypeArray.push(permissionType);
 

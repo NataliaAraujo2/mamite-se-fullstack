@@ -26,7 +26,10 @@ const userCreateValidation = () => {
         }
         return true;
       }),
-    body("permissionType").isString(),
+      body("permissionType")
+      .isString()
+      .isIn(['','customer', 'admin', 'staff'])
+      .withMessage("Permissão inválida.")
   ];
 };
 
