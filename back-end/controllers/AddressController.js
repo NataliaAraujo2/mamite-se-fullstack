@@ -44,9 +44,7 @@ const insertBillingAddress = async (req, res) => {
 
   //If billingAddress was creates sucessfully, return data
   if (!newBillingAddress) {
-    res.status(422).json({
-      errors: ["Houve um problema, por favor tente novamente mais tarde!"],
-    });
+    res.status(500).json({ error: "Internal server error" })
   }
 
   res.status(201).json(newBillingAddress);
@@ -82,9 +80,7 @@ const insertDeliveryAddress = async (req, res) => {
 
   //If billingAddress was creates sucessfully, return data
   if (!newDeliveryAddress) {
-    res.status(422).json({
-      errors: ["Houve um problema, por favor tente novamente mais tarde!"],
-    });
+    res.status(500).json({ error: "Internal server error" })
     return;
   }
 
@@ -111,9 +107,7 @@ const deleteBillingAddress = async (req, res) => {
 
     //Check if Address belongs to user
     if (!billingAddress.userId.equals(reqUser._id)) {
-      res
-        .status(422)
-        .json({ errors: ["Ocorreu um erro tente novamente mais tarde"] });
+      res.status(500).json({ error: "Internal server error" });
       return;
     }
 
@@ -138,7 +132,7 @@ const deleteDeliveryAddress = async (req, res) => {
       new mongoose.Types.ObjectId(id)
     );
 
-    //check if photo exists
+    //check if delivery address exists
     if (!deliveryAddress) {
       res.status(404).json({ errors: ["Endereço não encontrado"] });
       return;
@@ -146,9 +140,7 @@ const deleteDeliveryAddress = async (req, res) => {
 
     //Check if Address belongs to user
     if (!deliveryAddress.userId.equals(reqUser._id)) {
-      res
-        .status(422)
-        .json({ errors: ["Ocorreu um erro tente novamente mais tarde"] });
+      res.status(500).json({ error: "Internal server error" });
       return;
     }
 
@@ -171,16 +163,14 @@ const getAllUserDeliveryAddress = async (req, res) => {
 
   const user = await User.findById(reqUser._id);
 
-
- try {
-    const deliveryAddress = await DeliveryAddress.find({userId: user.id}).exec()
-    res.status(200).json(deliveryAddress)
-
- } catch (error) {
-  res.status(404).json({ errors: ["Endereço não encontrado"] });
- }
-
-
+  try {
+    const deliveryAddress = await DeliveryAddress.find({
+      userId: user.id,
+    }).exec();
+    res.status(200).json(deliveryAddress);
+  } catch (error) {
+    res.status(404).json({ errors: ["Endereço não encontrado"] });
+  }
 };
 
 //Get all Delivery Address of the logged-in user
@@ -191,17 +181,59 @@ const getUserBillingAddress = async (req, res) => {
 
   const user = await User.findById(reqUser._id);
 
-
- try {
-    const billingAddress = await BillingAddress.find({userId: user.id}).exec()
-    res.status(200).json(billingAddress)
-
- } catch (error) {
-  res.status(404).json({ errors: ["Endereço não encontrado"] });
- }
-
-
+  try {
+    const billingAddress = await BillingAddress.find({
+      userId: user.id,
+    }).exec();
+    res.status(200).json(billingAddress);
+  } catch (error) {
+    res.status(404).json({ errors: ["Endereço não encontrado"] });
+  }
 };
+
+//Get all Billing Address by user id
+const getUserbyIdBillingAddress = async (req, res) => {
+  //Checks the user's permission type
+  const reqUser = req.user;
+  const userAdmin = await User.findById(
+    new mongoose.Types.ObjectId(reqUser._id)
+  ).select("-password");
+  const userAdminandStaff = userAdmin.permissionType.includes(
+    "admin" || "staff"
+  );
+
+  if(!userAdminandStaff){
+    res.status(403).json({ error: "Permissão Negada" })
+  }
+
+  if (userAdminandStaff) {
+    try {
+      const {id} = req.params;
+
+        const user = await User.findById(new mongoose.Types.ObjectId(id)).select(
+        "-password"
+        );
+
+        if(!user) {
+          res.status(404).json({ errors: ["Usuário não encontrado"] });
+        }
+
+        try {
+          const billingAddress = await BillingAddress.find({
+            userId: user.id,
+          }).exec();
+          res.status(200).json(billingAddress);
+        } catch (error) {
+          res.status(404).json({ errors: ["Endereço não encontrado"] });
+        }
+        
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+};
+
+
 
 module.exports = {
   insertBillingAddress,
@@ -209,5 +241,6 @@ module.exports = {
   deleteBillingAddress,
   deleteDeliveryAddress,
   getAllUserDeliveryAddress,
-  getUserBillingAddress
+  getUserBillingAddress,
+  getUserbyIdBillingAddress,
 };

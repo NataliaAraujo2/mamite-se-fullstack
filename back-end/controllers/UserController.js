@@ -15,7 +15,7 @@ const generateToken = (id) => {
 
 // Register user and sign in
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, permissionType } = req.body;
 
   //check if user exists
   const user = await User.findOne({ email });
@@ -24,13 +24,6 @@ const register = async (req, res) => {
     res.status(422).json({ errors: ["Por favor, utilize outro email"] });
     return;
   }
-
-  
- 
-  //creates the array of permission types
-  let permissionType = "customer"
-  const permissionTypeArray = [];
-  permissionTypeArray.push(permissionType);
 
   //Generate password hash
   const salt = await bcrypt.genSalt();
@@ -41,7 +34,7 @@ const register = async (req, res) => {
     name,
     email,
     password: passwordHash,
-    permissionType: permissionTypeArray,
+    permissionType,
   });
 
   //If user was created successfuly return the token
